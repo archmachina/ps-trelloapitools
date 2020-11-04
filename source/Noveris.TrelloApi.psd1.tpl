@@ -104,14 +104,14 @@
     
             # Tags applied to this module. These help with module discovery in online galleries.
             Tags = @(
-                'Build'
+                'Trello'
             )
     
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/noveris-inf/ps-build/blob/main/LICENSE'
+            LicenseUri = 'https://github.com/noveris-inf/ps-trelloapi/blob/main/LICENSE'
     
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/noveris-inf/ps-build'
+            ProjectUri = 'https://github.com/noveris-inf/ps-trelloapi'
     
             # A URL to an icon representing this module.
             # IconUri = ''
