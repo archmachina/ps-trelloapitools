@@ -12,16 +12,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
-      - name: "Super Linter"
-        uses: github/super-linter@v3
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          submodules: true
 
       - name: Publish
         shell: pwsh
         run: |
-          ./Build.ps1
+          ./Build.ps1 -Stages Build,Publish
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

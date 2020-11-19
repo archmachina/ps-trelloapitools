@@ -80,10 +80,13 @@ Function Import-TrelloSession
 
     process
     {
+        # Deserialise from Path to session
         $session = Import-CliXml $Path
 
+        # Make sure we have a valid session object
         Test-TrelloValidSession -Session $session
 
+        # Return the session object
         $session
     }
 }
@@ -105,8 +108,10 @@ Function Export-TrelloSession
 
     process
     {
+        # Make sure we have a valid session
         Test-TrelloValidSession -Session $Session
 
+        # Output as serialised XML to Path
         $Session | Export-CliXml $Path
     }
 }
@@ -140,20 +145,34 @@ Function Invoke-TrelloApi
 
     process
     {
+        # Make sure we have a valid session first
         Test-TrelloValidSession -Session $Session
 
+        # Get our own version of the parameters to work with
         $params = $Parameters.Clone()
+        $sanitised = $Parameters.Clone()
 
+        # Add key to parameters
         $byteStr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Session.Key)
         $params["key"] = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($byteStr)
+        $sanitised["key"] = "XXXX"
 
+        # Add Token to parameters
         $byteStr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($Session.Token)
         $params["token"] = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($byteStr)
+        $sanitised["token"] = "XXXX"
 
+        # Build param string and sanitised param string
         $paramStr = ($params.GetEnumerator() | ForEach-Object { ("{0}={1}" -f $_.Key, $_.Value)}) -join "&"
+        $sanitisedStr = ($sanitised.GetEnumerator() | ForEach-Object { ("{0}={1}" -f $_.Key, $_.Value)}) -join "&"
 
+        # Build uri and sanitised URI
+        $uri = ("{0}{1}?{2}" -f $Session.BaseUrl, $Endpoint, $paramStr)
+        $sanitisedUri = ("{0}{1}?{2}" -f $Session.BaseUrl, $Endpoint, $sanitisedStr)
+
+        # Request parameters for Invoke-WebRequest
         $request = @{
-            Uri = ("{0}{1}?{2}" -f $Session.BaseUrl, $Endpoint, $paramStr)
+            Uri = $uri
             ContentType = "application/json"
             Method = $Method
             UseBasicParsing = $true
@@ -165,94 +184,12 @@ Function Invoke-TrelloApi
             $request["Body"] = $Body
         }
 
-        Write-Verbose ("Request URI: " + $request.Uri)
+        # Diagnostic information
+        Write-Verbose ("Request URI: " + $sanitisedUri)
         Write-Verbose ("Request Method:" + $request.Method)
 
+        # Make the actual request and return the data as a PS object
         $result = Invoke-WebRequest @request
         $result.Content | ConvertFrom-Json
-    }
-}
-
-<#
-#>
-Function Get-TrelloBoard
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNull()]
-        [PSCustomObject]$Session,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$BoardId
-    )
-
-    process
-    {
-        Invoke-TrelloApi -Session $Session -Endpoint ("/boards/{0}" -f $BoardId)
-    }
-}
-
-<#
-#>
-Function Get-TrelloListCards
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNull()]
-        [PSCustomObject]$Session,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$ListId
-    )
-
-    process
-    {
-        Invoke-TrelloApi -Session $Session -Endpoint ("/lists/{0}/cards" -f $ListId)
-    }
-}
-
-<#
-#>
-Function Get-TrelloBoardCards
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNull()]
-        [PSCustomObject]$Session,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$BoardId
-    )
-
-    process
-    {
-        Invoke-TrelloApi -Session $Session -Endpoint ("/boards/{0}/cards" -f $BoardId)
-    }
-}
-
-<#
-#>
-Function Get-TrelloBoardLists
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNull()]
-        [PSCustomObject]$Session,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$BoardId
-    )
-
-    process
-    {
-        Invoke-TrelloApi -Session $Session -Endpoint ("/boards/{0}/lists" -f $BoardId)
     }
 }
