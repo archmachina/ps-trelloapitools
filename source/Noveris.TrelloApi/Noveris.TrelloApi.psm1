@@ -196,3 +196,82 @@ Function Invoke-TrelloApi
         $result.Content | ConvertFrom-Json
     }
 }
+
+<#
+#>
+Function Get-TrelloList
+{
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNull()]
+    [PSCustomObject]$Session,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$BoardId,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ListName
+  )
+
+  process
+  {
+    # Check for a valid session
+    Test-TrelloValidSession -Session $Session
+
+    # Attempt to retrieve the list
+    $targetList = Invoke-TrelloApi -Session $Session -Endpoint ("/boards/{0}/lists" -f $BoardId) |
+      ForEach-Object { $_ } | 
+      Where-Object {$_.Name -eq $ListName -and $_.closed -eq $false} |
+      Select-Object -First 1
+
+    # Return the list, if we found one
+    if (($targetList | Measure-Object).Count -eq 1)
+    {
+      $targetList
+    }
+  }
+}
+
+<#
+#>
+Function Add-TrelloList
+{
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNull()]
+    [PSCustomObject]$Session,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$BoardId,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [string]$ListName,
+
+    [Parameter(Mandatory=$false)]
+    [ValidateNotNullOrEmpty()]
+    [string]$Position = "bottom"
+  )
+
+  process
+  {
+    # Check for a valid session
+    Test-TrelloValidSession -Session $Session
+
+    # Create the target list
+    $body = [PSCustomObject]@{
+      name = $ListName
+      pos = $Position
+    } | ConvertTo-Json
+    Write-Verbose "Creating list with properties: $body"
+    $targetList = Invoke-TrelloApi -Session $Session -Method Post -Endpoint ("/boards/{0}/lists" -f $BoardId) -Body $body
+
+    # Return a copy of the target lsit
+    $targetList
+  }
+}
