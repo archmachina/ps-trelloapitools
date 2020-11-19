@@ -12,7 +12,7 @@ Set-StrictMode -Version 2
 #>
 Function New-TrelloSession
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -29,10 +29,13 @@ Function New-TrelloSession
 
     process
     {
-        [PSCustomObject]@{
-            Key = (([System.Net.NetworkCredential]::new("", $Key)).SecurePassword)
-            Token = (([System.Net.NetworkCredential]::new("", $Token)).SecurePassword)
-            BaseUrl = $BaseUrl
+        if ($PSCmdlet.ShouldProcess("Trello Session", "Create"))
+        {
+            [PSCustomObject]@{
+                Key = (([System.Net.NetworkCredential]::new("", $Key)).SecurePassword)
+                Token = (([System.Net.NetworkCredential]::new("", $Token)).SecurePassword)
+                BaseUrl = $BaseUrl
+            }
         }
     }
 }
