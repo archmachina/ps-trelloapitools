@@ -1,7 +1,4 @@
-﻿[CmdletBinding()]
-param(
-)
-
+﻿
 ################
 # Global settings
 $InformationPreference = "Continue"
@@ -199,7 +196,138 @@ Function Invoke-TrelloApi
 
 <#
 #>
-Function Get-TrelloList
+Function Get-TrelloMemberBoards
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [PSCustomObject]$Session,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Member = "me",
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameMatch,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameRegex,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$IncludeClosed = $false
+    )
+
+    process
+    {
+        # Check for a valid session
+        Test-TrelloValidSession -Session $Session
+
+        # Attempt to retrieve the boards
+        $results = Invoke-TrelloApi -Session $Session -Endpoint ("/members/{0}/boards" -f $Member) |
+            ForEach-Object { $_ }
+
+        # Filter out closed objects
+        if (!$IncludeClosed)
+        {
+            $results = $results | Where-Object {$false -eq $_.closed}
+        }
+
+        # Filter for the first match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameMatch")
+        {
+            $results = $results |
+                Where-Object {$_.Name -eq $FilterFirstNameMatch} |
+                Select-Object -First 1
+        }
+
+        # Filter for the first match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameRegex")
+        {
+            $results = $results |
+                Where-Object {$_.Name -match $FilterFirstNameRegex} |
+                Select-Object -First 1
+        }
+
+        $results
+    }
+}
+
+<#
+#>
+Function Get-TrelloListCards
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNull()]
+        [PSCustomObject]$Session,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ListId,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameMatch,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameRegex,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$IncludeClosed = $false
+    )
+
+    process
+    {
+        # Check for a valid session
+        Test-TrelloValidSession -Session $Session
+
+        # Change filter to return all cards, if closed objects requested
+        $fmt = "/lists/{0}/cards"
+        if ($IncludeClosed)
+        {
+            $fmt = "/lists/{0}/cards/all"
+        }
+
+        # Attempt to retrieve the lists
+        $results = Invoke-TrelloApi -Session $Session -Endpoint ($fmt -f $ListId) |
+            ForEach-Object { $_ }
+
+        # Filter out closed objects
+        if (!$IncludeClosed)
+        {
+            $results = $results | Where-Object {$false -eq $_.closed}
+        }
+
+        # Filter for the first match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameMatch")
+        {
+            $results = $results |
+                Where-Object {$_.Name -eq $FilterFirstNameMatch} |
+                Select-Object -First 1
+        }
+
+        # Filter for the first regex match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameRegex")
+        {
+            $results = $results |
+                Where-Object {$_.Name -match $FilterFirstNameRegex} |
+                Select-Object -First 1
+        }
+
+        $results
+    }
+}
+
+<#
+#>
+Function Get-TrelloBoardCards
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
     [CmdletBinding()]
@@ -212,9 +340,16 @@ Function Get-TrelloList
         [ValidateNotNullOrEmpty()]
         [string]$BoardId,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
-        [string]$ListName
+        [string]$FilterFirstNameMatch,
+
+        [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameRegex,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$IncludeClosed = $false
     )
 
     process
@@ -222,24 +357,48 @@ Function Get-TrelloList
         # Check for a valid session
         Test-TrelloValidSession -Session $Session
 
-        # Attempt to retrieve the list
-        $targetList = Invoke-TrelloApi -Session $Session -Endpoint ("/boards/{0}/lists" -f $BoardId) |
-            ForEach-Object { $_ } |
-            Where-Object {$_.Name -eq $ListName -and $_.closed -eq $false} |
-            Select-Object -First 1
-
-        # Return the list, if we found one
-        if (($targetList | Measure-Object).Count -eq 1)
+        # Change filter to return all cards, if closed objects requested
+        $fmt = "/boards/{0}/cards"
+        if ($IncludeClosed)
         {
-            $targetList
+            $fmt = "/boards/{0}/cards/all"
         }
+
+        # Attempt to retrieve the lists
+        $results = Invoke-TrelloApi -Session $Session -Endpoint ($fmt -f $BoardId) |
+            ForEach-Object { $_ }
+
+        # Filter out closed objects
+        if (!$IncludeClosed)
+        {
+            $results = $results | Where-Object {$false -eq $_.closed}
+        }
+
+        # Filter for the first match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameMatch")
+        {
+            $results = $results |
+                Where-Object {$_.Name -eq $FilterFirstNameMatch} |
+                Select-Object -First 1
+        }
+
+        # Filter for the first regex match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameRegex")
+        {
+            $results = $results |
+                Where-Object {$_.Name -match $FilterFirstNameRegex} |
+                Select-Object -First 1
+        }
+
+        $results
     }
 }
 
 <#
 #>
-Function Add-TrelloList
+Function Get-TrelloLists
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', '')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
@@ -250,11 +409,85 @@ Function Add-TrelloList
         [ValidateNotNullOrEmpty()]
         [string]$BoardId,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [ValidateNotNullOrEmpty()]
-        [string]$ListName,
+        [string]$FilterFirstNameMatch,
 
         [Parameter(Mandatory=$false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$FilterFirstNameRegex,
+
+        [Parameter(Mandatory=$false)]
+        [switch]$IncludeClosed = $false
+    )
+
+    process
+    {
+        # Check for a valid session
+        Test-TrelloValidSession -Session $Session
+
+        # Change filter to return all cards, if closed objects requested
+        $fmt = "/boards/{0}/lists"
+        if ($IncludeClosed)
+        {
+            $fmt = "/boards/{0}/lists/all"
+        }
+
+        # Attempt to retrieve the lists
+        $results = Invoke-TrelloApi -Session $Session -Endpoint ($fmt -f $BoardId) |
+            ForEach-Object { $_ }
+
+        # Filter out closed objects
+        if (!$IncludeClosed)
+        {
+            $results = $results | Where-Object {$false -eq $_.closed}
+        }
+
+        # Filter for the first match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameMatch")
+        {
+            $results = $results |
+                Where-Object {$_.Name -eq $FilterFirstNameMatch} |
+                Select-Object -First 1
+        }
+
+        # Filter for the first regex match against the filter name, if supplied
+        if ($PSBoundParameters.Keys -contains "FilterFirstNameRegex")
+        {
+            $results = $results |
+                Where-Object {$_.Name -match $FilterFirstNameRegex} |
+                Select-Object -First 1
+        }
+
+        $results
+    }
+}
+
+<#
+#>
+Function Add-TrelloList
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [Parameter(Mandatory=$true,ParameterSetName="Options")]
+        [ValidateNotNull()]
+        [PSCustomObject]$Session,
+
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [Parameter(Mandatory=$true,ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$BoardId,
+
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [ValidateNotNull()]
+        [string]$Body,
+
+        [Parameter(Mandatory=$true, ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory=$false, ParameterSetName="Options")]
         [ValidateNotNullOrEmpty()]
         [string]$Position = "bottom"
     )
@@ -264,15 +497,83 @@ Function Add-TrelloList
         # Check for a valid session
         Test-TrelloValidSession -Session $Session
 
-        # Create the target list
-        $body = [PSCustomObject]@{
-            name = $ListName
-            pos = $Position
-        } | ConvertTo-Json
-        Write-Verbose "Creating list with properties: $body"
-        $targetList = Invoke-TrelloApi -Session $Session -Method Post -Endpoint ("/boards/{0}/lists" -f $BoardId) -Body $body
+        # Processing per parameter set name
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            "Body" {
+                break
+            }
+            "Options" {
+                $Body = [PSCustomObject]@{
+                    name = $Name
+                    pos = "bottom"
+                } | ConvertTo-Json
 
-        # Return a copy of the target lsit
-        $targetList
+                break
+            }
+        }
+
+        # Create the target list
+        Invoke-TrelloApi -Session $Session -Method Post -Endpoint ("/boards/{0}/lists" -f $BoardId) -Body $Body
+    }
+}
+
+<#
+#>
+Function Add-TrelloListCard
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [Parameter(Mandatory=$true,ParameterSetName="Options")]
+        [ValidateNotNull()]
+        [PSCustomObject]$Session,
+
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [Parameter(Mandatory=$true,ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$ListId,
+
+        [Parameter(Mandatory=$true,ParameterSetName="Body")]
+        [ValidateNotNull()]
+        [string]$Body,
+
+        [Parameter(Mandatory=$true, ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name,
+
+        [Parameter(Mandatory=$false, ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Position = "bottom",
+
+        [Parameter(Mandatory=$false, ParameterSetName="Options")]
+        [ValidateNotNullOrEmpty()]
+        [string]$Description = ""
+    )
+
+    process
+    {
+        # Check for a valid session
+        Test-TrelloValidSession -Session $Session
+
+        # Processing per parameter set name
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            "Body" {
+                break
+            }
+            "Options" {
+                $Body = [PSCustomObject]@{
+                    name = $Name
+                    pos = $Position
+                    desc = $Description
+                } | ConvertTo-Json
+
+                break
+            }
+        }
+
+        # Create the target list
+        Invoke-TrelloApi -Session $Session -Method Post -Endpoint ("/lists/{0}/cards" -f $ListId) -Body $Body
     }
 }

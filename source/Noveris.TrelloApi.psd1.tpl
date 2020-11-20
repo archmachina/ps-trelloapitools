@@ -75,8 +75,12 @@
         'Import-TrelloSession',
         'Export-TrelloSession',
         'Invoke-TrelloApi',
-        'Get-TrelloList',
-        'Add-TrelloList'
+        'Get-TrelloMemberBoards',
+        'Get-TrelloListCards',
+        'Get-TrelloBoardCards',
+        'Get-TrelloLists',
+        'Add-TrelloList',
+        'Add-TrelloListCard'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
