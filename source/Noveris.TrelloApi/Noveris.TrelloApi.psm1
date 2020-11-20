@@ -506,7 +506,7 @@ Function Add-TrelloList
             "Options" {
                 $Body = [PSCustomObject]@{
                     name = $Name
-                    pos = "bottom"
+                    pos = $Position
                 } | ConvertTo-Json
 
                 break
