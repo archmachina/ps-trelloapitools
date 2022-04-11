@@ -1,8 +1,8 @@
-# Module manifest for Noveris.TrelloApi
+# Module manifest for TrelloApiTools
 
 @{
     # Script module or binary module file associated with this manifest.
-    RootModule = 'Noveris.TrelloApi.psm1'
+    RootModule = 'TrelloApiTools.psm1'
 
     # Version number of this module.
     ModuleVersion = '__FULLVERSION__'
@@ -14,16 +14,16 @@
     )
 
     # ID used to uniquely identify this module
-    GUID = '735813cb-5746-4b8e-9714-591fc9a32b08'
+    GUID = 'eeeba60d-3f14-490f-9b5b-a1cddcbccc6a'
 
     # Author of this module
-    Author = 'Noveris Pty Ltd'
+    Author = 'Jesse Reichman'
 
     # Company or vendor of this module
-    CompanyName = 'Noveris Pty Ltd'
+    CompanyName = 'ArchMachina'
 
     # Copyright statement for this module
-    Copyright = '(c) 2019 Noveris Pty Ltd. All rights reserved.'
+    Copyright = '(c) 2022 Jesse Reichman. All rights reserved.'
 
     # Description of the functionality provided by this module
     Description = 'Trello Api module'
@@ -65,7 +65,7 @@
 
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     NestedModules = @(
-        'Noveris.TrelloApi.psm1'
+        'TrelloApiTools.psm1'
     )
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -74,7 +74,7 @@
         'Test-TrelloValidSession',
         'Import-TrelloSession',
         'Export-TrelloSession',
-        'Invoke-TrelloApi',
+        'Invoke-TrelloApiTools',
         'Get-TrelloMemberBoards',
         'Get-TrelloListCards',
         'Get-TrelloBoardCards',
@@ -97,7 +97,7 @@
 
     # List of all modules packaged with this module
     #ModuleList = @(
-    #    'Noveris.TrelloApi.psm1'
+    #    'TrelloApiTools.psm1'
     #)
 
     # List of all files packaged with this module
@@ -114,10 +114,10 @@
             )
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/noveris-inf/ps-trelloapi/blob/main/LICENSE'
+            LicenseUri = 'https://github.com/archmachina/ps-trelloapitools/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/noveris-inf/ps-trelloapi'
+            ProjectUri = 'https://github.com/archmachina/ps-trelloapitools'
 
             # A URL to an icon representing this module.
             # IconUri = ''

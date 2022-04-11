@@ -1,3 +1,3 @@
-# ps-trelloapi
+# ps-trelloapitools
 
-[![Latest](https://github.com/noveris-inf/ps-trelloapi/workflows/Latest/badge.svg)](https://github.com/noveris-inf/ps-trelloapi/actions?query=workflow%3ALatest) [![Versioned](https://github.com/noveris-inf/ps-trelloapi/workflows/Versioned/badge.svg)](https://github.com/noveris-inf/ps-trelloapi/actions?query=workflow%3AVersioned)
+[![latest](https://github.com/archmachina/ps-trelloapi/workflows/latest/badge.svg)](https://github.com/archmachina/ps-trelloapi/actions?query=workflow%3Alatest) [![release](https://github.com/archmachina/ps-trelloapi/workflows/release/badge.svg)](https://github.com/archmachina/ps-trelloapi/actions?query=workflow%3Arelease)
